@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Bob in the Haunted Room</title>
+  <style>
+    body { margin: 0; overflow: hidden; background: #000; }
+    canvas { display: block; }
+    #instructions {
+      position: absolute;
+      color: white;
+      font-family: sans-serif;
+      top: 10px;
+      left: 10px;
+      background: rgba(0,0,0,0.5);
+      padding: 10px;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div id="instructions">
+    👻 Arrow keys or swipe to move Bob. Click the door to open it.
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
+  <script>
+
+    // Scene setup
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    // Lights
+    const ambientLight = new THREE.AmbientLight(0x404040);
+    scene.add(ambientLight);
+    const spotLight = new THREE.SpotLight(0xff0000, 1, 50);
+    spotLight.position.set(0, 5, 5);
+    scene.add(spotLight);
+
+    // Floor
+    const floorGeometry = new THREE.BoxGeometry(10, 0.1, 10);
+    const floorMaterial = new THREE.MeshPhongMaterial({ color: 0x222222 });
+    const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+    floor.position.y = -0.05;
+    scene.add(floor);
+
+    // Walls
+    const wallMaterial = new THREE.MeshPhongMaterial({ color: 0x333333 });
+    const wall1 = new THREE.Mesh(new THREE.BoxGeometry(10, 3, 0.1), wallMaterial);
+    wall1.position.set(0, 1.5, -5);
+    scene.add(wall1);
+
+    const wall2 = wall1.clone(); wall2.position.z = 5;
+    const wall3 = new THREE.Mesh(new THREE.BoxGeometry(0.1, 3, 10), wallMaterial);
+    wall3.position.set(-5, 1.5, 0);
+    const wall4 = wall3.clone(); wall4.position.x = 5;
+    scene.add(wall2, wall3, wall4);
+
+    // Bob (player)
+    const bobGeometry = new THREE.SphereGeometry(0.3, 16, 16);
+    const bobMaterial = new THREE.MeshStandardMaterial({ color: 0x00ffcc });
+    const bob = new THREE.Mesh(bobGeometry, bobMaterial);
+    bob.position.y = 0.3;
+    scene.add(bob);
+
+    // Door
+    const doorGeometry = new THREE.BoxGeometry(1, 2, 0.1);
+    const doorMaterial = new THREE.MeshPhongMaterial({ color: 0x885533 });
+    const door = new THREE.Mesh(doorGeometry, doorMaterial);
+    door.position.set(0, 1, -4.95);
+    scene.add(door);
+
+    let doorOpen = false;
+    function openDoor() {
+      if (!doorOpen) {
+        door.rotation.y -= Math.PI / 2;
+        doorOpen = true;
+      }
+    }
+
+    // Interaction
+    window.addEventListener("click", (e) => {
+      const mouse = new THREE.Vector2(
+        (e.clientX / window.innerWidth) * 2 - 1,
+        -(e.clientY / window.innerHeight) * 2 + 1
+      );
+      const raycaster = new THREE.Raycaster();
+      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObject(door);
+      if (intersects.length > 0) openDoor();
+    });
+
+    // Movement
+    let moveDir = { left: false, right: false, forward: false, back: false };
+    window.addEventListener("keydown", e => {
+      if (e.key === "ArrowUp") moveDir.forward = true;
+      if (e.key === "ArrowDown") moveDir.back = true;
+      if (e.key === "ArrowLeft") moveDir.left = true;
+      if (e.key === "ArrowRight") moveDir.right = true;
+    });
+    window.addEventListener("keyup", e => {
+      if (e.key === "ArrowUp") moveDir.forward = false;
+      if (e.key === "ArrowDown") moveDir.back = false;
+      if (e.key === "ArrowLeft") moveDir.left = false;
+      if (e.key === "ArrowRight") moveDir.right = false;
+    });
+
+    // Camera position
+    camera.position.set(0, 2, 5);
+    camera.lookAt(0, 0, 0);
+
+    function animate() {
+      requestAnimationFrame(animate);
+      const speed = 0.05;
+      if (moveDir.forward) bob.position.z -= speed;
+      if (moveDir.back) bob.position.z += speed;
+      if (moveDir.left) bob.position.x -= speed;
+      if (moveDir.right) bob.position.x += speed;
+      camera.lookAt(bob.position);
+      renderer.render(scene, camera);
+    }
+    animate();
+
+  </script>
+</body>
+</html>
