@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Bob's Mansion Horror - Simple</title>
+  <style>
+    body {
+      margin: 0;
+      background: black;
+      color: white;
+      font-family: sans-serif;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      flex-direction: column;
+    }
+    #flashlight {
+      font-size: 2rem;
+      padding: 1em;
+      background: #222;
+      border: 1px solid #555;
+      cursor: pointer;
+      margin-top: 1em;
+    }
+  </style>
+</head>
+<body>
+  <h1>Bob's Mansion Horror</h1>
+  <div id="message">It's dark...</div>
+  <div id="flashlight">🔦 Toggle Flashlight</div>
+
+  <script>
+    let flashlightOn = false;
+    let monsterAppeared = false;
+
+    document.getElementById("flashlight").onclick = () => {
+      flashlightOn = !flashlightOn;
+      document.body.style.background = flashlightOn ? "#333" : "black";
+      document.getElementById("message").innerText = flashlightOn ? "You can see a little..." : "It's dark...";
+      if (monsterAppeared && flashlightOn) {
+        alert("💀 THE LURKER JUMPSCARE!");
+        monsterAppeared = false;
+      }
+    };
+
+    setTimeout(() => {
+      monsterAppeared = true;
+      document.getElementById("message").innerText = "You feel like something is here...";
+    }, 5000);
+  </script>
+</body>
+</html>
